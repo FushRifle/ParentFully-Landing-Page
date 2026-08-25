@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
                         </p>
 
                         {/* Tagline */}
-                        <div className="mt-5 max-w-md border-t border-white/10 pt-5">
+                        <div className="mt-1 max-w-md border-t border-white/10 pt-5">
                             <p className="text-sm font-bold italic leading-relaxed text-emerald-50/75">
                                 {selectedTagline}
                             </p>

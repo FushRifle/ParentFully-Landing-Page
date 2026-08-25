@@ -3,7 +3,7 @@ import { IMenuItem } from "@/types";
 export const menuItems: IMenuItem[] = [
     {
         text: "Features",
-        url: "#features"
+        url: "https://parentfullyapp.com/"
     },
     {
         text: "About Us",
