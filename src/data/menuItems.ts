@@ -12,5 +12,9 @@ export const menuItems: IMenuItem[] = [
     {
         text: "Contact",
         url: "#contact"
+    },
+    {
+        text: "Affiliate",
+        url: "/affiliate"
     }
 ];
