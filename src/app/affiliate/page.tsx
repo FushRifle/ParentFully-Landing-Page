@@ -21,7 +21,8 @@ export default function AffiliatePage() {
 
     return (
         <div className="min-h-screen bg-[#f8fbf9] pt-24 sm:pt-32">
-            <section className="bg-[#005A31] px-4 py-16 text-white sm:px-6 sm:py-20">
+            <section className="relative overflow-hidden bg-[#005A31] px-4 py-16 text-white sm:px-6 sm:py-20">
+                <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-[#F38500]/15 blur-3xl" />
                 <div className="mx-auto max-w-6xl">
                     <p className="text-sm font-black uppercase tracking-[0.16em] text-orange-200">Parentfully affiliate program</p>
                     <div className="mt-5 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
@@ -42,25 +43,25 @@ export default function AffiliatePage() {
                     <aside className="lg:pt-4">
                         <p className="text-sm font-black uppercase tracking-[0.16em] text-[#bf6500]">Built for your community</p>
                         <h2 className="mt-4 text-3xl font-black leading-tight text-gray-950 sm:text-4xl">A partnership with purpose.</h2>
-                        <div className="mt-8 space-y-6 border-t border-gray-200 pt-7">
-                            <div className="flex gap-4">
+                        <div className="mt-8 space-y-4">
+                            <div className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                                 <Handshake className="mt-0.5 h-5 w-5 shrink-0 text-[#F38500]" />
                                 <div><h3 className="font-black text-gray-900">Share something useful</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">Give families a practical way to build routines, independence, and clarity.</p></div>
                             </div>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                                 <Users className="mt-0.5 h-5 w-5 shrink-0 text-[#F38500]" />
                                 <div><h3 className="font-black text-gray-900">Grow with us</h3><p className="mt-1 text-sm leading-relaxed text-gray-600">Tell us about your audience so we can shape an affiliate program that serves everyone well.</p></div>
                             </div>
                         </div>
                     </aside>
 
-                    <div className="border border-gray-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-9">
+                    <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-9">
                         {submitted ? (
                             <div className="py-12 text-center sm:py-16">
                                 <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#E2FDF8] text-[#005A31]"><Check className="h-6 w-6" /></span>
                                 <h2 className="mt-5 text-3xl font-black text-gray-950">You&apos;re on the list.</h2>
                                 <p className="mx-auto mt-3 max-w-md leading-relaxed text-gray-600">Thanks for your interest. We&apos;ll be in touch when the Parentfully affiliate program is ready.</p>
-                                <button type="button" onClick={() => setSubmitted(false)} className="mt-7 text-sm font-black text-[#005A31] underline decoration-[#F38500] decoration-2 underline-offset-4">Submit another application</button>
+                                <button type="button" onClick={() => setSubmitted(false)} className="mt-7 rounded-full border border-[#005A31]/15 px-5 py-2.5 text-sm font-black text-[#005A31] transition hover:border-[#005A31] hover:bg-[#E2FDF8]">Submit another application</button>
                             </div>
                         ) : (
                             <>
@@ -69,13 +70,13 @@ export default function AffiliatePage() {
                                     <p className="mt-2 text-sm leading-relaxed text-gray-600">This is an expression of interest, not a commitment. We&apos;ll only use these details to follow up about the program.</p>
                                 </div>
                                 <form onSubmit={submitApplication} className="mt-7 grid gap-5 sm:grid-cols-2">
-                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Full name</span><input required name="name" autoComplete="name" className="h-12 border border-gray-300 bg-white px-3 outline-none transition focus:border-[#005A31] focus:ring-2 focus:ring-[#005A31]/10" placeholder="Your name" /></label>
-                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Email address</span><input required type="email" name="email" autoComplete="email" className="h-12 border border-gray-300 bg-white px-3 outline-none transition focus:border-[#005A31] focus:ring-2 focus:ring-[#005A31]/10" placeholder="you@example.com" /></label>
-                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Website or social profile</span><input required type="url" name="profile" className="h-12 border border-gray-300 bg-white px-3 outline-none transition focus:border-[#005A31] focus:ring-2 focus:ring-[#005A31]/10" placeholder="https://" /></label>
-                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Audience size</span><select required name="audience" defaultValue="" className="h-12 border border-gray-300 bg-white px-3 outline-none transition focus:border-[#005A31] focus:ring-2 focus:ring-[#005A31]/10"><option value="" disabled>Select a range</option>{audienceOptions.map((option) => <option key={option}>{option}</option>)}</select></label>
-                                    <label className="grid gap-2 text-sm font-bold text-gray-800 sm:col-span-2"><span>How do you support parents or families?</span><textarea required name="message" rows={4} className="border border-gray-300 bg-white px-3 py-3 outline-none transition focus:border-[#005A31] focus:ring-2 focus:ring-[#005A31]/10" placeholder="Tell us a little about your community and how you would share Parentfully." /></label>
+                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Full name</span><input required name="name" autoComplete="name" className="h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 outline-none transition focus:border-[#005A31] focus:bg-white focus:ring-2 focus:ring-[#005A31]/10" placeholder="Your name" /></label>
+                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Email address</span><input required type="email" name="email" autoComplete="email" className="h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 outline-none transition focus:border-[#005A31] focus:bg-white focus:ring-2 focus:ring-[#005A31]/10" placeholder="you@example.com" /></label>
+                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Website or social profile</span><input required type="url" name="profile" className="h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 outline-none transition focus:border-[#005A31] focus:bg-white focus:ring-2 focus:ring-[#005A31]/10" placeholder="https://" /></label>
+                                    <label className="grid gap-2 text-sm font-bold text-gray-800"><span>Audience size</span><select required name="audience" defaultValue="" className="h-12 rounded-xl border border-gray-200 bg-gray-50 px-4 outline-none transition focus:border-[#005A31] focus:bg-white focus:ring-2 focus:ring-[#005A31]/10"><option value="" disabled>Select a range</option>{audienceOptions.map((option) => <option key={option}>{option}</option>)}</select></label>
+                                    <label className="grid gap-2 text-sm font-bold text-gray-800 sm:col-span-2"><span>How do you support parents or families?</span><textarea required name="message" rows={4} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-[#005A31] focus:bg-white focus:ring-2 focus:ring-[#005A31]/10" placeholder="Tell us a little about your community and how you would share Parentfully." /></label>
                                     <label className="flex items-start gap-3 text-sm leading-relaxed text-gray-600 sm:col-span-2"><input required type="checkbox" className="mt-1 h-4 w-4 accent-[#005A31]" /><span>I&apos;d like Parentfully to contact me about the affiliate program.</span></label>
-                                    <div className="sm:col-span-2"><button type="submit" className="group inline-flex items-center gap-3 bg-[#005A31] px-6 py-3.5 font-black text-white transition hover:bg-[#004825]">Join the waitlist <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></button></div>
+                                    <div className="sm:col-span-2"><button type="submit" className="group inline-flex items-center gap-3 rounded-full bg-[#005A31] px-7 py-4 font-black text-white shadow-[0_18px_42px_rgba(0,90,49,0.24)] transition hover:-translate-y-0.5 hover:bg-[#004825] active:scale-95">Join the waitlist <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" /></button></div>
                                 </form>
                             </>
                         )}

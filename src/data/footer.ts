@@ -21,6 +21,10 @@ export const footerDetails: {
             text: "Benefits",
             url: "#benefits"
         },
+        {
+            text: "Affiliate",
+            url: "/affiliate"
+        },
 
     ],
     email: 'admin@parentfullyapp.com',
