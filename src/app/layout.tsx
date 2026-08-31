@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Source_Sans_3, Manrope } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import Header from "@/components/Header";
+import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { siteDetails } from "@/data/siteDetails";
 
@@ -81,7 +81,7 @@ export default function RootLayout({
         </noscript>
         {/* End Google Tag Manager (noscript) */}
 
-        <Header />
+        <SiteHeader />
         <main>{children}</main>
         <Footer />
         <Analytics />
