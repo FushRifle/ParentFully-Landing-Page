@@ -12,10 +12,10 @@ import { Mail } from 'lucide-react';
 
 const Footer: React.FC = () => {
     const taglines = [
-        "Parentfully — Parenting works better with a system.",
-        "Parentfully — More structure. More clarity. Less chaos.",
-        "Parentfully — Helping families raise confident, capable children with consistency.",
-        "Parentfully — The family operating system for intentional parenting."
+        "Parentfully. Parenting works better with a system.",
+        "Parentfully. More structure. More clarity. Less chaos.",
+        "Parentfully. Helping families raise confident, capable children with consistency.",
+        "Parentfully. The family operating system for intentional parenting."
     ];
     const selectedTagline = taglines[1];
     return (
