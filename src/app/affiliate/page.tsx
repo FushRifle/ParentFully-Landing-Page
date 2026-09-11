@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import countryList from 'react-select-country-list';
 import {
     ArrowRight,
@@ -83,8 +84,20 @@ function normalizeOptionalUrl(value: string | undefined, label: string): string 
     }
 }
 
-export default function AffiliatePage() {
+function AffiliatePageContent() {
+    const searchParams = useSearchParams();
+    const isSchoolPartnership = searchParams.get('partner') === 'school';
     const [form, setForm] = useState(initialForm);
+    const [schoolForm, setSchoolForm] = useState({
+        schoolName: '',
+        schoolLocation: '',
+        contactPerson: '',
+        email: '',
+        phone: '',
+        classCount: '',
+        familyCount: '',
+    });
+    const [schoolTermsAccepted, setSchoolTermsAccepted] = useState(false);
     const [socialLink, setSocialLink] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -96,10 +109,48 @@ export default function AffiliatePage() {
         () => !form.password_confirmation || form.password === form.password_confirmation,
         [form.password, form.password_confirmation],
     );
+    const featureItems = isSchoolPartnership ? [
+        { icon: Users, title: 'Support every family', copy: 'Give parents practical tools that reinforce progress at home.' },
+        { icon: BarChart3, title: 'Simple school referrals', copy: 'Share one trusted school link with your parent community.' },
+        { icon: ShieldCheck, title: 'A partnership built on trust', copy: 'Clear terms, responsible communication, and dedicated support.' },
+    ] : [
+        { icon: Users, title: 'Share with purpose', copy: 'Introduce genuinely useful family tools.' },
+        { icon: BarChart3, title: 'Track every step', copy: 'See signups, qualification, and conversions.' },
+        { icon: ShieldCheck, title: 'Trusted partnership', copy: 'Human-reviewed partners and clear reporting.' },
+    ];
+    const processSteps = isSchoolPartnership ? [
+        ['01', 'Tell us about your school', 'Share your school details, contact person, classes, and approximate family community.'],
+        ['02', 'We create your partnership', 'Our team reviews the interest form and prepares your school partner account.'],
+        ['03', 'Invite your families', 'Receive a unique referral link your school or parent association can share confidently.'],
+    ] : [
+        ['01', 'Register', 'Tell us about your audience, values, and how you support families.'],
+        ['02', 'Get approved', 'Our team reviews your application and activates your private partner portal.'],
+        ['03', 'Share and earn', 'Use your code, monitor referrals, and follow commission through payout.'],
+    ];
 
     const updateField = <Key extends keyof AffiliateApplicationPayload>(key: Key, value: AffiliateApplicationPayload[Key]) => {
         setForm((current) => ({ ...current, [key]: value }));
         if (error) setError('');
+    };
+
+    const updateSchoolField = (key: keyof typeof schoolForm, value: string) => {
+        setSchoolForm((current) => ({ ...current, [key]: value }));
+        if (error) setError('');
+    };
+
+    const submitSchoolInterest = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (Object.values(schoolForm).some((value) => !value.trim())) {
+            return setError('Please complete all school partnership fields.');
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(schoolForm.email.trim())) {
+            return setError('Please enter a valid official email address.');
+        }
+        if (!schoolTermsAccepted) {
+            return setError('Please confirm the school partnership agreement.');
+        }
+        setError('');
+        setSubmitted(true);
     };
 
     const reviewApplication = (event: FormEvent<HTMLFormElement>) => {
@@ -161,10 +212,11 @@ export default function AffiliatePage() {
                 <div className="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
                 <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                     <div>
-                        <h1 className="mt-7 max-w-3xl text-4xl font-black leading-[1.03] text-balance sm:text-6xl">Turn your trusted voice into meaningful family impact.</h1>
-                        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-emerald-50/80 sm:text-xl">Recommend a family operating system you believe in, help parents build calmer homes, and earn commission when your community chooses Parentfully Premium.</p>
+                        <p className="text-sm font-black uppercase tracking-[0.18em] text-orange-200">{isSchoolPartnership ? 'Parentfully for schools' : 'Parentfully partner programme'}</p>
+                        <h1 className="mt-7 max-w-3xl text-4xl font-black leading-[1.03] text-balance sm:text-6xl">{isSchoolPartnership ? 'Help families carry school-day progress into everyday home life.' : 'Turn your trusted voice into meaningful family impact.'}</h1>
+                        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-emerald-50/80 sm:text-xl">{isSchoolPartnership ? 'Partner with Parentfully to give your parent community practical support for routines, goals, communication, and consistent family life.' : 'Recommend a family operating system you believe in, help parents build calmer homes, and earn commission when your community chooses Parentfully Premium.'}</p>
                         <div className="mt-8 flex flex-wrap gap-3">
-                            <a href="#apply" className="inline-flex items-center gap-2 rounded-full bg-[#F38500] px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-black/15 transition hover:-translate-y-0.5 hover:bg-[#db7700]">Register <ArrowRight className="h-4 w-4" /></a>
+                            <a href="#apply" className="inline-flex items-center gap-2 rounded-full bg-[#F38500] px-6 py-3.5 text-sm font-black text-white shadow-xl shadow-black/15 transition hover:-translate-y-0.5 hover:bg-[#db7700]">{isSchoolPartnership ? 'Register your school' : 'Register'} <ArrowRight className="h-4 w-4" /></a>
                             <Link href="/affiliate/login" className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-black text-white backdrop-blur transition hover:bg-white/15">Login <ChevronRight className="h-4 w-4" /></Link>
                         </div>
                     </div>
@@ -173,7 +225,7 @@ export default function AffiliatePage() {
                         <div className="relative overflow-hidden rounded-[2.25rem] border border-white/20 bg-white/10 p-2 shadow-[0_30px_80px_rgba(0,0,0,0.25)] backdrop-blur">
                             <Image src="/images/parenting-team-phone-diverse.png" alt="A happy family using Parentfully together" width={1536} height={1024} priority className="aspect-[4/3] w-full rounded-[1.85rem] object-cover" />
                             <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/20 bg-[#073E27]/90 p-4 backdrop-blur-md">
-                                <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.12em] text-orange-200">Share real family support</p><p className="mt-1 text-sm font-bold text-white">Recommend tools that help families follow through.</p></div><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F38500]"><Handshake className="h-5 w-5" /></span></div>
+                                <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.12em] text-orange-200">{isSchoolPartnership ? 'School and family, connected' : 'Share real family support'}</p><p className="mt-1 text-sm font-bold text-white">{isSchoolPartnership ? 'Extend practical support beyond the classroom.' : 'Recommend tools that help families follow through.'}</p></div><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F38500]"><Handshake className="h-5 w-5" /></span></div>
                             </div>
                         </div>
                         {/**
@@ -186,23 +238,15 @@ export default function AffiliatePage() {
 
             <section className="relative z-10 -mt-7 px-4 sm:px-6">
                 <div className="mx-auto grid max-w-6xl gap-3 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:grid-cols-3 sm:p-5">
-                    {[
-                        { icon: Users, title: 'Share with purpose', copy: 'Introduce genuinely useful family tools.' },
-                        { icon: BarChart3, title: 'Track every step', copy: 'See signups, qualification, and conversions.' },
-                        { icon: ShieldCheck, title: 'Trusted partnership', copy: 'Human-reviewed partners and clear reporting.' },
-                    ].map(({ icon: Icon, title, copy }) => <div key={title} className="flex items-start gap-3 rounded-2xl p-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF8F0] text-[#00683A]"><Icon className="h-5 w-5" /></span><div><h2 className="text-sm font-black text-slate-950">{title}</h2><p className="mt-1 text-xs leading-relaxed text-slate-500">{copy}</p></div></div>)}
+                    {featureItems.map(({ icon: Icon, title, copy }) => <div key={title} className="flex items-start gap-3 rounded-2xl p-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF8F0] text-[#00683A]"><Icon className="h-5 w-5" /></span><div><h2 className="text-sm font-black text-slate-950">{title}</h2><p className="mt-1 text-xs leading-relaxed text-slate-500">{copy}</p></div></div>)}
                 </div>
             </section>
 
             <section className="px-4 py-16 sm:px-6 lg:py-24">
                 <div className="mx-auto max-w-6xl">
-                    <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[0.16em] text-[#BF6500]">How partnership works</p><h2 className="mt-3 text-3xl font-black text-slate-950 sm:text-4xl">Simple to share. Easy to understand.</h2></div>
+                    <div className="mx-auto max-w-2xl text-center"><p className="text-sm font-black uppercase tracking-[0.16em] text-[#BF6500]">How partnership works</p><h2 className="mt-3 text-3xl font-black text-slate-950 sm:text-4xl">{isSchoolPartnership ? 'A simple bridge between school and home.' : 'Simple to share. Easy to understand.'}</h2></div>
                     <div className="mt-10 grid gap-4 md:grid-cols-3">
-                        {[
-                            ['01', 'Register', 'Tell us about your audience, values, and how you support families.'],
-                            ['02', 'Get approved', 'Our team reviews your application and activates your private partner portal.'],
-                            ['03', 'Share and earn', 'Use your code, monitor referrals, and follow commission through payout.'],
-                        ].map(([number, title, copy]) => (
+                        {processSteps.map(([number, title, copy]) => (
                             <div key={number} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_16px_45px_rgba(15,23,42,0.05)]"><span className="text-sm font-black text-[#F38500]">{number}</span><h3 className="mt-5 text-xl font-black text-slate-950">{title}</h3><p className="mt-2 text-sm leading-relaxed text-slate-600">{copy}</p></div>
                         ))}
                     </div>
@@ -212,9 +256,9 @@ export default function AffiliatePage() {
             <section id="apply" className="scroll-mt-32 px-4 pb-20 sm:px-6 lg:pb-28">
                 <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
                     <aside className="rounded-[2rem] bg-[#073E27] p-7 text-white lg:sticky lg:top-28 sm:p-9">
-                        <Handshake className="h-9 w-9 text-orange-300" /><h2 className="mt-6 text-3xl font-black leading-tight">Built for people families already trust.</h2><p className="mt-4 text-sm leading-relaxed text-emerald-50/75">We welcome educators, coaches, creators, therapists, community leaders, schools, and family-focused organisations.</p>
+                        <Handshake className="h-9 w-9 text-orange-300" /><h2 className="mt-6 text-3xl font-black leading-tight">{isSchoolPartnership ? 'Bring practical family support into your school community.' : 'Built for people families already trust.'}</h2><p className="mt-4 text-sm leading-relaxed text-emerald-50/75">{isSchoolPartnership ? 'Designed for schools, childcare providers, and parent associations that want to help families build calmer, more consistent home routines.' : 'We welcome educators, coaches, creators, therapists, community leaders, schools, and family-focused organisations.'}</p>
                         <div className="mt-8 space-y-4 border-t border-white/10 pt-7">
-                            {['A unique trackable affiliate code', 'Live referral and commission reporting', 'Clear pending and payout statuses', 'Resources to introduce Parentfully well'].map((item) => <div key={item} className="flex gap-3 text-sm font-bold text-emerald-50/90"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-orange-300" /> {item}</div>)}
+                            {(isSchoolPartnership ? ['A unique school referral link', 'A partner account for your school', 'Resources to share with families', 'Clear partnership terms and support'] : ['A unique trackable affiliate code', 'Live referral and commission reporting', 'Clear pending and payout statuses', 'Resources to introduce Parentfully well']).map((item) => <div key={item} className="flex gap-3 text-sm font-bold text-emerald-50/90"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-orange-300" /> {item}</div>)}
                         </div>
                     </aside>
 
@@ -222,10 +266,35 @@ export default function AffiliatePage() {
                         {submitted ? (
                             <div className="py-14 text-center sm:py-20">
                                 <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#E2F8EC] text-[#00683A]"><Check className="h-8 w-8" /></span>
-                                <p className="mt-6 text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">Application received</p><h2 className="mt-3 text-3xl font-black text-slate-950">Your application is pending review.</h2>
-                                <p className="mx-auto mt-4 max-w-lg leading-relaxed text-slate-600">We&apos;ll review your details and contact you by email. Your affiliate code becomes available only after approval.</p>
+                                <p className="mt-6 text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">{isSchoolPartnership ? 'Interest received' : 'Application received'}</p><h2 className="mt-3 text-3xl font-black text-slate-950">{isSchoolPartnership ? 'Thank you for your interest.' : 'Your application is pending review.'}</h2>
+                                <p className="mx-auto mt-4 max-w-lg leading-relaxed text-slate-600">{isSchoolPartnership ? 'The Parentfully team will review your school partnership details and contact you using the official email address provided.' : 'We’ll review your details and contact you by email. Your affiliate code becomes available only after approval.'}</p>
                                 <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/" className="rounded-full bg-[#00683A] px-6 py-3 text-sm font-black text-white">Return home</Link><Link href="/affiliate/login" className="rounded-full border border-slate-200 px-6 py-3 text-sm font-black text-slate-800">Already approved? Sign in</Link></div>
                             </div>
+                        ) : isSchoolPartnership ? (
+                            <>
+                                <div className="border-b border-slate-200 pb-6">
+                                    <p className="text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">School partnership</p>
+                                    <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Parentfully School Partnership Interest Form</h2>
+                                    <p className="mt-3 text-sm leading-relaxed text-slate-600">Interested in partnering with Parentfully? Complete this short form. We will use the information to create your school partner account and referral link.</p>
+                                </div>
+                                <form noValidate onSubmit={submitSchoolInterest} className="mt-7 grid gap-5 sm:grid-cols-2">
+                                    <label className={`${labelClass} sm:col-span-2`}><span>School name</span><input required className={inputClass} value={schoolForm.schoolName} onChange={(event) => updateSchoolField('schoolName', event.target.value)} placeholder="Enter the school name" /></label>
+                                    <label className={`${labelClass} sm:col-span-2`}><span>School location</span><input required autoComplete="street-address" className={inputClass} value={schoolForm.schoolLocation} onChange={(event) => updateSchoolField('schoolLocation', event.target.value)} placeholder="City, state or full address" /></label>
+                                    <label className={`${labelClass} sm:col-span-2`}><span>Contact person’s name and role</span><input required autoComplete="name" className={inputClass} value={schoolForm.contactPerson} onChange={(event) => updateSchoolField('contactPerson', event.target.value)} placeholder="e.g. Amaka Obi, Head Teacher" /></label>
+                                    <label className={labelClass}><span>Official email address</span><input required type="email" autoComplete="email" className={inputClass} value={schoolForm.email} onChange={(event) => updateSchoolField('email', event.target.value)} placeholder="admin@school.org" /></label>
+                                    <label className={labelClass}><span>Phone number</span><input required type="tel" autoComplete="tel" className={inputClass} value={schoolForm.phone} onChange={(event) => updateSchoolField('phone', event.target.value)} placeholder="+234 000 000 0000" /></label>
+                                    <label className={labelClass}><span>Number of classes</span><input required min="1" type="number" inputMode="numeric" className={inputClass} value={schoolForm.classCount} onChange={(event) => updateSchoolField('classCount', event.target.value)} placeholder="e.g. 12" /></label>
+                                    <label className={labelClass}><span>Approximate number of families</span><input required min="1" type="number" inputMode="numeric" className={inputClass} value={schoolForm.familyCount} onChange={(event) => updateSchoolField('familyCount', event.target.value)} placeholder="e.g. 300" /></label>
+                                    <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
+                                        <input type="checkbox" checked={schoolTermsAccepted} onChange={(event) => { setSchoolTermsAccepted(event.target.checked); if (error) setError(''); }} className="mt-1 h-5 w-5 shrink-0 accent-[#00683A]" />
+                                        <span className="text-sm font-semibold leading-relaxed text-slate-700">I confirm that I am authorized to register this school or parent association, and I have read and agree to the Parentfully School Affiliate Program Terms and Conditions.</span>
+                                    </label>
+                                    {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700 sm:col-span-2">{error}</div>}
+                                    <div className="flex justify-end border-t border-slate-200 pt-6 sm:col-span-2">
+                                        <button type="submit" className="inline-flex min-w-60 items-center justify-center gap-2 rounded-full bg-[#00683A] px-9 py-4 text-sm font-black text-white shadow-[0_16px_35px_rgba(0,104,58,0.22)] transition hover:-translate-y-0.5 hover:bg-[#00552F]">Submit Interest <ArrowRight className="h-4 w-4" /></button>
+                                    </div>
+                                </form>
+                            </>
                         ) : (
                             <>
                                 <div className="border-b border-slate-200 pb-6"><p className="text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">Partner application</p><h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Tell us about your community</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Fields marked with * are required. Applications are reviewed before portal access is activated.</p></div>
@@ -267,5 +336,13 @@ export default function AffiliatePage() {
                 confirmLabel="Agree and submit application"
             />
         </div>
+    );
+}
+
+export default function AffiliatePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#F6FAF7]" />}>
+            <AffiliatePageContent />
+        </Suspense>
     );
 }
