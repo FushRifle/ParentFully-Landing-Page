@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import React from 'react';
 import Image from 'next/image';
@@ -23,7 +21,7 @@ const Footer: React.FC = () => {
             {/* Subtle Background Pattern */}
             <div
                 className="absolute inset-0 z-0 bg-cover bg-center opacity-[0.03] pointer-events-none"
-                style={{ backgroundImage: "url('/images/HeroBG.png')" }}
+                style={{ backgroundImage: "url('/images/HeroBG.webp')" }}
             />
 
             {/* Top Border Glow */}
@@ -95,7 +93,7 @@ const Footer: React.FC = () => {
                         <h4 className="mb-6 text-base font-black uppercase tracking-wide text-white">Support</h4>
                         <ul className="space-y-4 text-sm font-bold text-emerald-50/85">
                             <li><Link href="/privacy" className="transition-colors hover:text-[#F38500]">Privacy Policy</Link></li>
-                            <li><Link href="terms" className="transition-colors hover:text-[#F38500]">Terms of Service</Link></li>
+                            <li><Link href="/terms" className="transition-colors hover:text-[#F38500]">Terms of Service</Link></li>
                             <li><Link href="/help" className="transition-colors hover:text-[#F38500]">Help Center</Link></li>
                             <li><Link href="/delete" className="transition-colors hover:text-[#F38500]">Account Deletion</Link></li>
                         </ul>

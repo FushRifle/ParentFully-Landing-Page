@@ -57,7 +57,7 @@ export default function ProductStory() {
             <section className="overflow-hidden bg-[#005A31] py-20 lg:py-28">
                 <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                     <div className="relative order-2 mx-auto w-full max-w-[280px] lg:order-1">
-                        <Image src="/images/Hero.png" alt="Parentfully routines screen" width={623} height={1280} className="h-auto w-full" />
+                        <Image src="/images/Hero.png" alt="Parentfully routines screen" width={623} height={1280} sizes="280px" className="h-auto w-full" />
                     </div>
                     <div className="order-1 text-center lg:order-2 lg:text-left">
                         <p className="text-sm font-black uppercase tracking-[0.16em] text-orange-200">02 — Everyday independence</p>
