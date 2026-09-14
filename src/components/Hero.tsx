@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Check } from 'lucide-react';
@@ -13,7 +11,7 @@ const proofPoints = [
 
 const Hero: React.FC = () => (
     <section className="relative w-full overflow-hidden bg-[#E2FDF8] pb-16 pt-28 md:pb-24 md:pt-36">
-        <div className="absolute inset-0 bg-cover bg-center opacity-[0.035]" style={{ backgroundImage: "url('/images/HeroBG.png')" }} />
+        <div className="absolute inset-0 bg-cover bg-center opacity-[0.035]" style={{ backgroundImage: "url('/images/HeroBG.webp')" }} />
         <div className="absolute inset-x-0 top-0 h-[600px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.8),rgba(255,255,255,0.12)_50%,transparent_72%)]" />
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">

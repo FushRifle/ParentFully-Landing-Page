@@ -46,7 +46,7 @@ const Testimonials: React.FC = () => {
 
             <div
                 className="absolute inset-0 bg-cover bg-center opacity-[0.04]"
-                style={{ backgroundImage: "url('/images/HeroBG.png')" }}
+                style={{ backgroundImage: "url('/images/HeroBG.webp')" }}
             />
             <div className="absolute left-0 top-0 h-24 w-full bg-gradient-to-b from-white/70 to-transparent" />
             <div className="absolute bottom-0 left-0 h-28 w-full bg-gradient-to-t from-white/45 to-transparent" />
