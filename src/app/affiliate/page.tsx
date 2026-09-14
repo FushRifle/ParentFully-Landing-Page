@@ -21,6 +21,8 @@ import {
 
 import type { AffiliateApplicationPayload } from '@/lib/affiliate/types';
 import PartnerAgreementModal from '@/components/affiliate/PartnerAgreementModal';
+import SchoolAffiliateApplicationForm, { type SchoolAffiliateFormValues } from '@/components/affiliate/SchoolAffiliateApplicationForm';
+import SchoolAffiliateTermsModal from '@/components/affiliate/SchoolAffiliateTermsModal';
 
 const inputClass = 'h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-[15px] text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#00683A] focus:bg-white focus:ring-4 focus:ring-[#00683A]/10';
 const labelClass = 'grid gap-2 text-sm font-bold text-slate-800';
@@ -88,7 +90,7 @@ function AffiliatePageContent() {
     const searchParams = useSearchParams();
     const isSchoolPartnership = searchParams.get('partner') === 'school';
     const [form, setForm] = useState(initialForm);
-    const [schoolForm, setSchoolForm] = useState({
+    const [schoolForm, setSchoolForm] = useState<SchoolAffiliateFormValues>({
         schoolName: '',
         schoolLocation: '',
         contactPerson: '',
@@ -96,6 +98,8 @@ function AffiliatePageContent() {
         phone: '',
         classCount: '',
         familyCount: '',
+        password: '',
+        passwordConfirmation: '',
     });
     const [schoolTermsAccepted, setSchoolTermsAccepted] = useState(false);
     const [socialLink, setSocialLink] = useState('');
@@ -104,6 +108,7 @@ function AffiliatePageContent() {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [agreementOpen, setAgreementOpen] = useState(false);
+    const [schoolTermsOpen, setSchoolTermsOpen] = useState(false);
     const [agreementAccepted, setAgreementAccepted] = useState(false);
     const passwordsMatch = useMemo(
         () => !form.password_confirmation || form.password === form.password_confirmation,
@@ -118,8 +123,9 @@ function AffiliatePageContent() {
         { icon: BarChart3, title: 'Track every step', copy: 'See signups, qualification, and conversions.' },
         { icon: ShieldCheck, title: 'Trusted partnership', copy: 'Human-reviewed partners and clear reporting.' },
     ];
+
     const processSteps = isSchoolPartnership ? [
-        ['01', 'Tell us about your school', 'Share your school details, contact person, classes, and approximate family community.'],
+        ['01', 'Register your school', 'Complete a short form with your school name and the best person to contact. That’s all we need to get started.'],
         ['02', 'We create your partnership', 'Our team reviews the interest form and prepares your school partner account.'],
         ['03', 'Invite your families', 'Receive a unique referral link your school or parent association can share confidently.'],
     ] : [
@@ -138,19 +144,73 @@ function AffiliatePageContent() {
         if (error) setError('');
     };
 
-    const submitSchoolInterest = (event: FormEvent<HTMLFormElement>) => {
+    const reviewSchoolInterest = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (Object.values(schoolForm).some((value) => !value.trim())) {
-            return setError('Please complete all school partnership fields.');
+        const requiredSchoolFields = [
+            schoolForm.schoolName,
+            schoolForm.schoolLocation,
+            schoolForm.contactPerson,
+            schoolForm.email,
+            schoolForm.phone,
+            schoolForm.password,
+            schoolForm.passwordConfirmation,
+        ];
+        if (requiredSchoolFields.some((value) => !value.trim())) {
+            return setError('Please complete all required school partnership fields.');
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(schoolForm.email.trim())) {
             return setError('Please enter a valid official email address.');
         }
-        if (!schoolTermsAccepted) {
-            return setError('Please confirm the school partnership agreement.');
+        if (schoolForm.password.length < 8) {
+            return setError('Create a password with at least 8 characters.');
         }
+        if (schoolForm.password !== schoolForm.passwordConfirmation) {
+            return setError('School portal passwords do not match.');
+        }
+        setSchoolTermsAccepted(false);
         setError('');
-        setSubmitted(true);
+        setSchoolTermsOpen(true);
+    };
+
+    const submitSchoolInterest = async () => {
+        if (!schoolTermsAccepted || submitting) return;
+        setSubmitting(true);
+        setError('');
+        try {
+            const schoolName = schoolForm.schoolName.trim();
+            const contactPerson = schoolForm.contactPerson.trim();
+            const response = await fetch('/api/affiliate/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: `${schoolName} — ${contactPerson}`,
+                    email: schoolForm.email.trim(),
+                    password: schoolForm.password,
+                    password_confirmation: schoolForm.passwordConfirmation,
+                    phone: schoolForm.phone.trim(),
+                    city: schoolForm.schoolLocation.trim(),
+                    audience_type: 'school_or_parent_association',
+                    audience_size: schoolForm.familyCount.trim() ? Number(schoolForm.familyCount.trim()) : undefined,
+                    payout_method: 'bank_transfer',
+                    reason: [
+                        'School Partnership Application',
+                        `School name: ${schoolName}`,
+                        `School location: ${schoolForm.schoolLocation.trim()}`,
+                        `Contact person and role: ${contactPerson}`,
+                        schoolForm.classCount.trim() ? `Number of classes: ${schoolForm.classCount.trim()}` : null,
+                        schoolForm.familyCount.trim() ? `Approximate number of families: ${schoolForm.familyCount.trim()}` : null,
+                    ].filter(Boolean).join('\n'),
+                }),
+            });
+            const payload = await response.json().catch(() => null);
+            if (!response.ok) throw new Error(getErrorMessage(payload, response.status));
+            setSchoolTermsOpen(false);
+            setSubmitted(true);
+        } catch (submissionError) {
+            setError(submissionError instanceof Error ? submissionError.message : 'We could not submit your school partnership interest. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const reviewApplication = (event: FormEvent<HTMLFormElement>) => {
@@ -223,7 +283,14 @@ function AffiliatePageContent() {
                     <div className="relative mx-auto w-full max-w-xl">
                         <div className="absolute -inset-3 rotate-3 rounded-[2.5rem] border border-white/15 bg-white/5" />
                         <div className="relative overflow-hidden rounded-[2.25rem] border border-white/20 bg-white/10 p-2 shadow-[0_30px_80px_rgba(0,0,0,0.25)] backdrop-blur">
-                            <Image src="/images/parenting-team-phone-diverse.png" alt="A happy family using Parentfully together" width={1536} height={1024} priority className="aspect-[4/3] w-full rounded-[1.85rem] object-cover" />
+                            <Image
+                                src={isSchoolPartnership ? '/images/school-partnership-hero.png' : '/images/parenting-team-phone-diverse.png'}
+                                alt={isSchoolPartnership ? 'Parents speaking with an educator outside a school' : 'A happy family using Parentfully together'}
+                                width={1536}
+                                height={1024}
+                                priority
+                                className="aspect-[4/3] w-full rounded-[1.85rem] object-cover"
+                            />
                             <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/20 bg-[#073E27]/90 p-4 backdrop-blur-md">
                                 <div className="flex items-center justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.12em] text-orange-200">{isSchoolPartnership ? 'School and family, connected' : 'Share real family support'}</p><p className="mt-1 text-sm font-bold text-white">{isSchoolPartnership ? 'Extend practical support beyond the classroom.' : 'Recommend tools that help families follow through.'}</p></div><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F38500]"><Handshake className="h-5 w-5" /></span></div>
                             </div>
@@ -256,7 +323,7 @@ function AffiliatePageContent() {
             <section id="apply" className="scroll-mt-32 px-4 pb-20 sm:px-6 lg:pb-28">
                 <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
                     <aside className="rounded-[2rem] bg-[#073E27] p-7 text-white lg:sticky lg:top-28 sm:p-9">
-                        <Handshake className="h-9 w-9 text-orange-300" /><h2 className="mt-6 text-3xl font-black leading-tight">{isSchoolPartnership ? 'Bring practical family support into your school community.' : 'Built for people families already trust.'}</h2><p className="mt-4 text-sm leading-relaxed text-emerald-50/75">{isSchoolPartnership ? 'Designed for schools, childcare providers, and parent associations that want to help families build calmer, more consistent home routines.' : 'We welcome educators, coaches, creators, therapists, community leaders, schools, and family-focused organisations.'}</p>
+                        <Handshake className="h-9 w-9 text-orange-300" /><h2 className="mt-6 text-3xl font-black leading-tight">{isSchoolPartnership ? 'Bring practical family support into your school community.' : 'Built for people families already trust.'}</h2><p className="mt-4 text-sm leading-relaxed text-emerald-50/75">{isSchoolPartnership ? 'Designed for schools, childcare providers, and parent associations that want to help families build calmer, more consistent home system.' : 'We welcome educators, coaches, creators, therapists, community leaders, schools, and family-focused organisations.'}</p>
                         <div className="mt-8 space-y-4 border-t border-white/10 pt-7">
                             {(isSchoolPartnership ? ['A unique school referral link', 'A partner account for your school', 'Resources to share with families', 'Clear partnership terms and support'] : ['A unique trackable affiliate code', 'Live referral and commission reporting', 'Clear pending and payout statuses', 'Resources to introduce Parentfully well']).map((item) => <div key={item} className="flex gap-3 text-sm font-bold text-emerald-50/90"><BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-orange-300" /> {item}</div>)}
                         </div>
@@ -271,30 +338,13 @@ function AffiliatePageContent() {
                                 <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/" className="rounded-full bg-[#00683A] px-6 py-3 text-sm font-black text-white">Return home</Link><Link href="/affiliate/login" className="rounded-full border border-slate-200 px-6 py-3 text-sm font-black text-slate-800">Already approved? Sign in</Link></div>
                             </div>
                         ) : isSchoolPartnership ? (
-                            <>
-                                <div className="border-b border-slate-200 pb-6">
-                                    <p className="text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">School partnership</p>
-                                    <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Parentfully School Partnership Interest Form</h2>
-                                    <p className="mt-3 text-sm leading-relaxed text-slate-600">Interested in partnering with Parentfully? Complete this short form. We will use the information to create your school partner account and referral link.</p>
-                                </div>
-                                <form noValidate onSubmit={submitSchoolInterest} className="mt-7 grid gap-5 sm:grid-cols-2">
-                                    <label className={`${labelClass} sm:col-span-2`}><span>School name</span><input required className={inputClass} value={schoolForm.schoolName} onChange={(event) => updateSchoolField('schoolName', event.target.value)} placeholder="Enter the school name" /></label>
-                                    <label className={`${labelClass} sm:col-span-2`}><span>School location</span><input required autoComplete="street-address" className={inputClass} value={schoolForm.schoolLocation} onChange={(event) => updateSchoolField('schoolLocation', event.target.value)} placeholder="City, state or full address" /></label>
-                                    <label className={`${labelClass} sm:col-span-2`}><span>Contact person’s name and role</span><input required autoComplete="name" className={inputClass} value={schoolForm.contactPerson} onChange={(event) => updateSchoolField('contactPerson', event.target.value)} placeholder="e.g. Amaka Obi, Head Teacher" /></label>
-                                    <label className={labelClass}><span>Official email address</span><input required type="email" autoComplete="email" className={inputClass} value={schoolForm.email} onChange={(event) => updateSchoolField('email', event.target.value)} placeholder="admin@school.org" /></label>
-                                    <label className={labelClass}><span>Phone number</span><input required type="tel" autoComplete="tel" className={inputClass} value={schoolForm.phone} onChange={(event) => updateSchoolField('phone', event.target.value)} placeholder="+234 000 000 0000" /></label>
-                                    <label className={labelClass}><span>Number of classes</span><input required min="1" type="number" inputMode="numeric" className={inputClass} value={schoolForm.classCount} onChange={(event) => updateSchoolField('classCount', event.target.value)} placeholder="e.g. 12" /></label>
-                                    <label className={labelClass}><span>Approximate number of families</span><input required min="1" type="number" inputMode="numeric" className={inputClass} value={schoolForm.familyCount} onChange={(event) => updateSchoolField('familyCount', event.target.value)} placeholder="e.g. 300" /></label>
-                                    <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
-                                        <input type="checkbox" checked={schoolTermsAccepted} onChange={(event) => { setSchoolTermsAccepted(event.target.checked); if (error) setError(''); }} className="mt-1 h-5 w-5 shrink-0 accent-[#00683A]" />
-                                        <span className="text-sm font-semibold leading-relaxed text-slate-700">I confirm that I am authorized to register this school or parent association, and I have read and agree to the Parentfully School Affiliate Program Terms and Conditions.</span>
-                                    </label>
-                                    {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700 sm:col-span-2">{error}</div>}
-                                    <div className="flex justify-end border-t border-slate-200 pt-6 sm:col-span-2">
-                                        <button type="submit" className="inline-flex min-w-60 items-center justify-center gap-2 rounded-full bg-[#00683A] px-9 py-4 text-sm font-black text-white shadow-[0_16px_35px_rgba(0,104,58,0.22)] transition hover:-translate-y-0.5 hover:bg-[#00552F]">Submit Interest <ArrowRight className="h-4 w-4" /></button>
-                                    </div>
-                                </form>
-                            </>
+                            <SchoolAffiliateApplicationForm
+                                form={schoolForm}
+                                error={error}
+                                submitting={submitting}
+                                onChange={updateSchoolField}
+                                onSubmit={reviewSchoolInterest}
+                            />
                         ) : (
                             <>
                                 <div className="border-b border-slate-200 pb-6"><p className="text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">Partner application</p><h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Tell us about your community</h2><p className="mt-2 text-sm leading-relaxed text-slate-600">Fields marked with * are required. Applications are reviewed before portal access is activated.</p></div>
@@ -334,6 +384,16 @@ function AffiliatePageContent() {
                 onConfirm={() => void submitApplication()}
                 busy={submitting}
                 confirmLabel="Agree and submit application"
+            />
+            <SchoolAffiliateTermsModal
+                open={schoolTermsOpen}
+                accepted={schoolTermsAccepted}
+                onAcceptedChange={setSchoolTermsAccepted}
+                onClose={() => {
+                    if (!submitting) setSchoolTermsOpen(false);
+                }}
+                onConfirm={() => void submitSchoolInterest()}
+                busy={submitting}
             />
         </div>
     );

@@ -23,7 +23,7 @@ export const menuItems: IMenuItem[] = [
             },
             {
                 text: "School Partnership",
-                url: "/affiliate?partner=school"
+                url: "/affiliate/school"
             }
         ]
     }

@@ -12,5 +12,5 @@ const affiliateNavigation = [
 
 export default function SiteHeader() {
     const pathname = usePathname();
-    return <Header navigationItems={pathname.startsWith('/affiliate') ? affiliateNavigation : undefined} />;
+    return <Header navigationItems={pathname.startsWith('/affiliate/dashboard') ? affiliateNavigation : undefined} />;
 }
