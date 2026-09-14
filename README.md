@@ -45,19 +45,7 @@ Before starting, make sure you have the following installed:
 1. **Install dependencies**: Run `npm install`
 2. **Run the development server**: `npm run dev`
 3. **View your project**: Open [localhost:3000](http://localhost:3000)
-
-### Affiliate portal configuration
-
-Set `PARENTFULLY_API_URL` in the deployment environment to the backend API base URL, including `/api`.
-
-```bash
-PARENTFULLY_API_URL=https://parentfully-prod-api.axetechinnovations.com/api
-```
-
-The affiliate portal proxies backend requests through Next.js route handlers. Affiliate bearer tokens are stored in secure, HTTP-only cookies and are never exposed to browser JavaScript.
-
----
-
+4. 
 ## Customization
 
 1. **Edit colors**: Update `globals.css` for primary, secondary, background, and accent colors.
