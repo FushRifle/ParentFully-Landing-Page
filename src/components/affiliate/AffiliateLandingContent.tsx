@@ -48,6 +48,13 @@ const initialForm: AffiliateApplicationPayload = {
 const backendFieldMessages: Record<string, string> = {
     name: 'Please enter your full name.',
     email: 'That email is invalid or already has an affiliate application.',
+    school_name: 'Please enter the school name.',
+    school_location: 'Please enter the school location.',
+    contact_person_name_role: 'Please enter the contact person’s name and role.',
+    official_email: 'That official email is invalid or already has an affiliate application.',
+    phone: 'Please enter a valid phone number.',
+    number_of_classes: 'Number of classes must be a valid number of zero or more.',
+    approximate_number_of_families: 'Approximate number of families must be a valid number of zero or more.',
     password: 'Create a password with at least 8 characters.',
     password_confirmation: 'Please confirm your password.',
     country: 'Please select a valid country.',
@@ -65,7 +72,6 @@ function getErrorMessage(payload: unknown, status: number, isSchoolApplication =
     const field = errorPayload?.errors ? Object.keys(errorPayload.errors)[0] : null;
     if (field) {
         const normalizedField = field.replace(/\.\d+$/, '');
-        if (isSchoolApplication && normalizedField === 'name') return 'Please enter the school name.';
         return backendFieldMessages[normalizedField] || 'Please review the highlighted application details and try again.';
     }
     if (status === 409 || (status === 422 && errorPayload?.message?.toLowerCase().includes('already'))) {
@@ -140,7 +146,7 @@ export default function AffiliateLandingContent({ isSchoolPartnership }: { isSch
 
     const processSteps = isSchoolPartnership ? [
         ['01', 'Register your school', 'Complete a short form with your school name and the best person to contact. That’s all we need to get started.'],
-        ['02', 'We create your partnership', 'Our team reviews the interest form and prepares your school partner account.'],
+        ['02', 'We create your partnership', 'Our team reviews the application form and prepares your school partner account.'],
         ['03', 'Invite your families', 'Receive a unique referral link your school or parent association can share confidently.'],
     ] : [
         ['01', 'Register', 'Tell us about your audience, values, and how you support families.'],
@@ -158,7 +164,7 @@ export default function AffiliateLandingContent({ isSchoolPartnership }: { isSch
         if (error) setError('');
     };
 
-    const submitSchoolInterest = async (event: FormEvent<HTMLFormElement>) => {
+    const submitSchoolapplication = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (submitting) return;
         const requiredSchoolFields = [
@@ -196,35 +202,31 @@ export default function AffiliateLandingContent({ isSchoolPartnership }: { isSch
         setSubmitting(true);
         setError('');
         try {
-            const schoolName = schoolForm.schoolName.trim();
-            const contactPerson = schoolForm.contactPerson.trim();
             const response = await fetch('/api/affiliate/apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: schoolName,
-                    email: schoolForm.email.trim(),
+                    affiliate_type: 'school',
+                    school_name: schoolForm.schoolName.trim(),
+                    school_location: schoolForm.schoolLocation.trim(),
+                    contact_person_name_role: schoolForm.contactPerson.trim(),
+                    official_email: schoolForm.email.trim(),
+                    phone: schoolForm.phone.trim(),
+                    number_of_classes: schoolForm.classCount.trim()
+                        ? Number(schoolForm.classCount.trim())
+                        : undefined,
+                    approximate_number_of_families: schoolForm.familyCount.trim()
+                        ? Number(schoolForm.familyCount.trim())
+                        : undefined,
                     password: schoolForm.password,
                     password_confirmation: schoolForm.passwordConfirmation,
-                    phone: schoolForm.phone.trim(),
-                    audience_type: 'school_or_parent_association',
-                    audience_size: schoolForm.familyCount.trim() ? Number(schoolForm.familyCount.trim()) : undefined,
-                    payout_method: 'bank_transfer',
-                    reason: [
-                        'School Partnership Application',
-                        `School name: ${schoolName}`,
-                        `School location: ${schoolForm.schoolLocation.trim()}`,
-                        `Contact person and role: ${contactPerson}`,
-                        schoolForm.classCount.trim() ? `Number of classes: ${schoolForm.classCount.trim()}` : null,
-                        schoolForm.familyCount.trim() ? `Approximate number of families: ${schoolForm.familyCount.trim()}` : null,
-                    ].filter(Boolean).join('\n'),
                 }),
             });
             const payload = await response.json().catch(() => null);
             if (!response.ok) throw new Error(getErrorMessage(payload, response.status, true));
             setSubmitted(true);
         } catch (submissionError) {
-            setError(submissionError instanceof Error ? submissionError.message : 'We could not submit your school partnership interest. Please try again.');
+            setError(submissionError instanceof Error ? submissionError.message : 'We could not submit your school partnership application. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -351,7 +353,7 @@ export default function AffiliateLandingContent({ isSchoolPartnership }: { isSch
                         {submitted ? (
                             <div className="py-14 text-center sm:py-20">
                                 <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#E2F8EC] text-[#00683A]"><Check className="h-8 w-8" /></span>
-                                <p className="mt-6 text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">{isSchoolPartnership ? 'Interest received' : 'Application received'}</p><h2 className="mt-3 text-3xl font-black text-slate-950">{isSchoolPartnership ? 'Thank you for your interest.' : 'Your application is pending review.'}</h2>
+                                <p className="mt-6 text-sm font-black uppercase tracking-[0.14em] text-[#BF6500]">{isSchoolPartnership ? 'application received' : 'Application received'}</p><h2 className="mt-3 text-3xl font-black text-slate-950">{isSchoolPartnership ? 'Thank you for your application.' : 'Your application is pending review.'}</h2>
                                 <p className="mx-auto mt-4 max-w-lg leading-relaxed text-slate-600">{isSchoolPartnership ? 'The Parentfully team will review your school partnership details and contact you using the official email address provided.' : 'We’ll review your details and contact you by email. Your affiliate code becomes available only after approval.'}</p>
                                 <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href="/" className="rounded-full bg-[#00683A] px-6 py-3 text-sm font-black text-white">Return home</Link><Link href="/affiliate/login" className="rounded-full border border-slate-200 px-6 py-3 text-sm font-black text-slate-800">Already approved? Sign in</Link></div>
                             </div>
@@ -367,7 +369,7 @@ export default function AffiliateLandingContent({ isSchoolPartnership }: { isSch
                                     if (error) setError('');
                                 }}
                                 onOpenTerms={() => setSchoolTermsOpen(true)}
-                                onSubmit={submitSchoolInterest}
+                                onSubmit={submitSchoolapplication}
                             />
                         ) : (
                             <>
