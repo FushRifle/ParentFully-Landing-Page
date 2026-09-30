@@ -10,6 +10,7 @@ const manrope = Manrope({ subsets: ["latin"] });
 const sourceSans = Source_Sans_3({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteDetails.siteUrl),
   title: 'Parentfully | The Family Operating System',
   description: 'Parentfully is the Family Operating System that helps parents turn good intentions into everyday action. Create routines, build positive habits, set growth goals, coordinate caregivers, and raise thriving children with more clarity and less overwhelm.',
   keywords: [
